@@ -164,11 +164,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Save reset token to user
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = resetTokenExpires;
-    await user.save();
-
     console.log('🔑 Reset token generated and saved');
 
     // Create reset URL
@@ -176,6 +171,14 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
     console.log('🔗 Reset URL created:', resetUrl);
+
+    // Hash the token before saving (for security)
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    
+    // Save hashed reset token to user
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = resetTokenExpires;
+    await user.save();
 
     try {
       // Test email service connection
@@ -235,6 +238,8 @@ export const resetPassword = async (req: Request, res: Response) => {
     const { token } = req.params;
     const { password } = req.body;
 
+    console.log('🔍 Reset password attempt with token:', token ? 'present' : 'missing');
+
     if (!password) {
       return res.status(400).json({
         success: false,
@@ -251,6 +256,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     // Hash the token
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    console.log('🔑 Looking for user with hashed token');
 
     // Find user with valid reset token
     const user = await User.findOne({
@@ -259,11 +265,14 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
+      console.log('❌ No user found with valid reset token');
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired reset token'
       });
     }
+
+    console.log('✅ User found for reset:', user.email);
 
     // Update password
     user.password = password;
