@@ -5,8 +5,8 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:4000/api'
   }
   
-  // Production: Use environment variable or default
-  return import.meta.env.VITE_API_URL || 'https://your-backend-url.onrender.com/api'
+  // Production: Use environment variable or default to Render URL
+  return import.meta.env.VITE_API_URL || 'https://task-manager-backend-a7fs.onrender.com/api'
 }
 
 export const API_BASE_URL = getApiBaseUrl()
