@@ -2,7 +2,7 @@
 
 Sistema completo de gestión de tareas desarrollado con **Vue.js 3** y **Node.js**, implementando autenticación JWT, base de datos MongoDB, y sistema de email transaccional para recuperación de contraseñas.
 
-**🌐 Demo Live**: [Frontend](https://your-app.vercel.app) | [Backend API](https://your-backend.onrender.com/api/health)
+**🌐 Demo Live**: [Frontend](https://prueba-met-net.vercel.app) | [Backend API](https://task-manager-backend-a7fs.onrender.com/api/health)
 
 ---
 
@@ -15,7 +15,7 @@ Sistema completo de gestión de tareas desarrollado con **Vue.js 3** y **Node.js
 - ✅ **API RESTful** segura con Node.js + Express
 - ✅ **TypeScript** en frontend y backend
 - ✅ **Responsive design** optimizado para móviles
-- ✅ **Deploy automático** en Render + Vercel
+- ✅ **Desplegado** en Render + Vercel
 
 ---
 
@@ -26,7 +26,6 @@ prueba-Met-Net/
 ├── frontend/           # Vue.js 3 + TypeScript + Tailwind
 │   ├── src/
 │   │   ├── components/ # Componentes reutilizables
-│   │   ├── views/      # Páginas principales
 │   │   ├── composables/# Lógica reutilizable (useAuth)
 │   │   ├── services/   # API calls
 │   │   ├── config/     # Configuración de API
@@ -60,7 +59,7 @@ prueba-Met-Net/
 
 ### **1. Clonar el repositorio**
 ```bash
-git clone https://github.com/tu-usuario/prueba-Met-Net.git
+git clone https://github.com/maikercanon/prueba-Met-Net.git
 cd prueba-Met-Net
 ```
 
@@ -82,6 +81,11 @@ MONGODB_URI=mongodb://localhost:27017/taskmanager
 JWT_SECRET=tu_jwt_secret_super_seguro
 PORT=4000
 FRONTEND_URL=http://localhost:5173
+
+# Opcional - Para habilitar emails
+EMAIL_PROVIDER=sendgrid
+SENDGRID_API_KEY=SG.tu_api_key
+EMAIL_FROM=tu-email@gmail.com
 ```
 
 ### **4. Iniciar los servidores**
@@ -99,76 +103,6 @@ npm run dev
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:4000
 - **Health Check**: http://localhost:4000/api/health
-
----
-
-## 🌐 **Despliegue en Producción**
-
-### **🔧 Backend en Render**
-
-1. **Preparar el repositorio**:
-   ```bash
-   git add .
-   git commit -m "Deploy: Prepare for production"
-   git push origin main
-   ```
-
-2. **Crear servicio en Render**:
-   - Ve a [render.com](https://render.com)
-   - Crea nuevo **Web Service**
-   - Conecta tu repositorio de GitHub
-   - Selecciona la carpeta `backend`
-
-3. **Configurar variables de entorno**:
-   ```env
-   NODE_ENV=production
-   PORT=4000
-   MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/taskmanager
-   JWT_SECRET=jwt_super_seguro_para_produccion
-   FRONTEND_URL=https://tu-app.vercel.app
-   EMAIL_PROVIDER=sendgrid
-   SENDGRID_API_KEY=SG.tu_api_key_real
-   EMAIL_FROM=noreply@tudominio.com
-   ```
-
-4. **Deploy automático**:
-   - Render detecta `render.yaml` automáticamente
-   - Build: `npm install && npm run build`
-   - Start: `npm start`
-
-### **⚡ Frontend en Vercel**
-
-1. **Conectar repositorio**:
-   - Ve a [vercel.com](https://vercel.com)
-   - **Import Project** desde GitHub
-   - Selecciona la carpeta `frontend`
-
-2. **Configurar variables de entorno**:
-   ```env
-   VITE_API_URL=https://tu-backend.onrender.com/api
-   ```
-
-3. **Deploy automático**:
-   - Vercel detecta `vercel.json` automáticamente
-   - Build: `npm run build`
-   - Output: `dist/`
-
-### **🔗 Conectar Frontend y Backend**
-
-1. **Obtener URL del backend** (Render):
-   ```
-   https://task-manager-backend-abcd.onrender.com
-   ```
-
-2. **Configurar en Vercel**:
-   ```env
-   VITE_API_URL=https://task-manager-backend-abcd.onrender.com/api
-   ```
-
-3. **Actualizar CORS en backend**:
-   ```env
-   FRONTEND_URL=https://task-manager-frontend-xyz.vercel.app
-   ```
 
 ---
 
@@ -222,7 +156,7 @@ const getApiBaseUrl = (): string => {
   if (import.meta.env.DEV) {
     return 'http://localhost:4000/api' // Desarrollo
   }
-  return import.meta.env.VITE_API_URL || 'production-url' // Producción
+  return 'https://task-manager-backend-a7fs.onrender.com/api' // Producción
 }
 ```
 
@@ -239,13 +173,11 @@ const getApiBaseUrl = (): string => {
 
 ### **Producción**
 ```bash
-# Configurar SendGrid
-node setup-sendgrid.js
-
-# O manualmente en .env:
+# Configurar SendGrid en variables de entorno:
 EMAIL_PROVIDER=sendgrid
 SENDGRID_API_KEY=SG.xxx...
-EMAIL_FROM=noreply@tudominio.com
+EMAIL_FROM=noreply@taskmanager.app
+EMAIL_FROM_NAME=Task Manager
 ```
 
 ---
@@ -258,7 +190,7 @@ POST /api/auth/register      # Registro de usuario
 POST /api/auth/login         # Inicio de sesión
 GET  /api/auth/profile       # Perfil del usuario
 POST /api/auth/forgot-password # Solicitar reset
-POST /api/auth/reset-password  # Confirmar reset
+POST /api/auth/reset-password/:token # Confirmar reset
 ```
 
 ### **Tareas**
@@ -288,25 +220,63 @@ GET    /api/health          # Health check para monitoring
 
 ---
 
-## 🧪 **Testing**
+## 🧪 **Testing & Uso**
 
-### **Credenciales de Prueba**
-```javascript
-// Usuario de prueba
-email: "test@example.com"
-password: "123456"
-```
+### **URLs de Producción**
+- **Frontend**: https://prueba-met-net.vercel.app
+- **Backend**: https://task-manager-backend-a7fs.onrender.com
+- **API Health**: https://task-manager-backend-a7fs.onrender.com/api/health
 
 ### **Flujo de Testing**
-1. Registrar nuevo usuario
-2. Iniciar sesión
-3. Crear/editar/eliminar tareas
-4. Probar "Olvidé mi contraseña"
-5. Usar token de desarrollo para reset
+1. **Registro**: Crear nueva cuenta de usuario
+2. **Login**: Iniciar sesión con credenciales
+3. **Tareas**: Crear, editar, y eliminar tareas
+4. **Reset Password**: Probar recuperación de contraseña
+5. **Responsive**: Verificar en diferentes dispositivos
 
-### **Health Checks**
-- **Backend**: `GET /api/health`
-- **Frontend**: Acceder a la URL principal
+### **Credenciales de Prueba**
+Puedes crear tu propia cuenta o usar:
+```javascript
+// Registra tu propia cuenta para testing
+email: "tu-email@gmail.com"
+password: "123456" // Mínimo 6 caracteres
+```
+
+---
+
+## 🌟 **Características Destacadas**
+
+### **Gestión de Estado Sin Librerías**
+```typescript
+// useAuth.ts - Composable para autenticación
+const authState = reactive({
+  user: null as User | null,
+  isAuthenticated: false,
+  isLoading: false,
+  error: null as string | null,
+})
+
+// Usando provide/inject en lugar de Pinia/Vuex
+provide('auth', authState)
+```
+
+### **Sistema Email Universal**
+```typescript
+// Soporta múltiples proveedores
+const emailProviders = {
+  sendgrid: 'Producción - 100 emails gratis/día',
+  gmail: 'Desarrollo - Gmail personal',
+  smtp: 'Cualquier proveedor SMTP'
+}
+```
+
+### **API Adaptativa**
+```typescript
+// Se adapta automáticamente entre desarrollo y producción
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:4000/api'
+  : 'https://task-manager-backend-a7fs.onrender.com/api'
+```
 
 ---
 
@@ -329,6 +299,9 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 ## 👨‍💻 **Autor**
 
 **Maiker** - Desarrollador Full Stack
+- 📧 Email: [maikersito200109@gmail.com](mailto:maikersito200109@gmail.com)
+- 🔗 GitHub: [@maikercanon](https://github.com/maikercanon)
+- 🌐 Proyecto: [prueba-Met-Net](https://github.com/maikercanon/prueba-Met-Net)
 
 ---
 
@@ -344,5 +317,13 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
 ---
 
-*Desarrollado con ❤️ usando Vue.js 3 + Node.js + MongoDB*
+## ⭐ **Demo & Repository**
+
+🌐 **Live Demo**: https://prueba-met-net.vercel.app  
+📂 **Source Code**: https://github.com/maikercanon/prueba-Met-Net  
+🔧 **API Health**: https://task-manager-backend-a7fs.onrender.com/api/health  
+
+---
+
+*Desarrollado con ❤️ usando Vue.js 3 + Node.js + MongoDB*  
 *Desplegado en �� Render + Vercel* 
