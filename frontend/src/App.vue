@@ -12,7 +12,7 @@ import { createAuthProvider } from './composables/useAuth'
 const auth = createAuthProvider()
 
 // Initialize auth when app mounts
-onMounted(() => {
-  auth.initializeAuth()
+onMounted(async () => {
+  await auth.initializeAuth()
 })
 </script>

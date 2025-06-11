@@ -2,6 +2,7 @@ import { ref, computed, reactive, inject, provide } from 'vue';
 import axios from 'axios';
 import type { ComputedRef } from 'vue';
 import { API_CONFIG } from '../config/api';
+import router from '../router';
 
 export interface User {
   id: string;
@@ -34,7 +35,9 @@ export interface AuthService {
   error: ComputedRef<string | null>;
   isAuthenticated: ComputedRef<boolean>;
   
-  initializeAuth: () => void;
+  initializeAuth: () => Promise<void>;
+  validateToken: () => Promise<void>;
+  isTokenExpired: () => boolean;
   register: (userData: { name: string; email: string; password: string }) => Promise<{ success: boolean; message: string }>;
   login: (credentials: { email: string; password: string }) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
@@ -60,7 +63,9 @@ export function createAuthProvider(): AuthService {
   });
 
   // Computed properties
-  const isAuthenticated = computed(() => !!state.token && !!state.user);
+  const isAuthenticated = computed(() => {
+    return !!state.token && !!state.user && !isTokenExpired();
+  });
 
   // Setup axios interceptors
   const setupAxiosInterceptors = () => {
@@ -88,16 +93,40 @@ export function createAuthProvider(): AuthService {
   };
 
   // Initialize auth from localStorage
-  const initializeAuth = () => {
+  const initializeAuth = async () => {
     const savedToken = localStorage.getItem('auth_token');
     const savedUser = localStorage.getItem('auth_user');
     
     if (savedToken && savedUser) {
+      // Check if token is expired first (client-side check)
+      if (isTokenExpired()) {
+        console.log('Token expired, clearing auth data...');
+        clearAuthData();
+        return;
+      }
+      
       state.token = savedToken;
       state.user = JSON.parse(savedUser);
+      
+      // Only validate token if we're on a protected route
+      const currentPath = window.location.pathname;
+      if (currentPath === '/dashboard' || currentPath.startsWith('/dashboard')) {
+        await validateToken();
+      }
     }
     
     setupAxiosInterceptors();
+  };
+
+  // Validate token by making a request to the server
+  const validateToken = async () => {
+    try {
+      await fetchProfile();
+    } catch (err) {
+      // Token is invalid, clear auth data
+      console.log('Token validation failed, logging out...');
+      logout();
+    }
   };
 
   // Set authentication data
@@ -174,6 +203,22 @@ export function createAuthProvider(): AuthService {
   // Logout user
   const logout = () => {
     clearAuthData();
+    // Redirect to login page
+    router.push('/login');
+  };
+
+  // Check if token is expired (client-side check)
+  const isTokenExpired = () => {
+    const token = state.token || localStorage.getItem('auth_token');
+    if (!token) return true;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp && payload.exp < currentTime;
+    } catch (error) {
+      return true; // If token is malformed, consider it expired
+    }
   };
 
   // Forgot password
@@ -253,6 +298,8 @@ export function createAuthProvider(): AuthService {
     
     // Actions
     initializeAuth,
+    validateToken,
+    isTokenExpired,
     register,
     login,
     logout,

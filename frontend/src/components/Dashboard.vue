@@ -39,14 +39,29 @@
         <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
           <div class="flex">
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">Error</h3>
-              <p class="mt-1 text-sm text-red-700">{{ error }}</p>
-              <button 
-                @click="loadTasks"
-                class="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-              >
-                Retry
-              </button>
+              <!-- Token Expiration Error -->
+              <div v-if="isTokenError" class="text-center">
+                <h3 class="text-sm font-medium text-red-800">Session Expired</h3>
+                <p class="mt-1 text-sm text-red-700">Your session has expired. Please log in again to continue.</p>
+                <button 
+                  @click="handleSessionExpired"
+                  class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-medium"
+                >
+                  Go to Login
+                </button>
+              </div>
+              
+              <!-- General Error -->
+              <div v-else>
+                <h3 class="text-sm font-medium text-red-800">Error</h3>
+                <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+                <button 
+                  @click="loadTasks"
+                  class="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -67,7 +82,7 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import TaskForm from './TaskForm.vue'
@@ -81,6 +96,20 @@ const auth = useAuth()
 const tasks = ref<Task[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+
+// Computed property to detect token-related errors
+const isTokenError = computed(() => {
+  return error.value && (
+    error.value.includes('token') || 
+    error.value.includes('unauthorized') || 
+    error.value.includes('authentication') ||
+    error.value.includes('expired') ||
+    error.value.includes('Access token required') ||
+    auth.error.value?.includes('token') ||
+    auth.error.value?.includes('unauthorized') ||
+    auth.error.value?.includes('authentication')
+  )
+})
 
 // Task management functions
 const loadTasks = async () => {
@@ -144,11 +173,39 @@ const handleLogout = () => {
   router.push('/login')
 }
 
+const handleSessionExpired = () => {
+  // Clear any existing errors
+  error.value = null
+  auth.clearError()
+  
+  // Logout user (this will clear tokens and redirect)
+  auth.logout()
+}
+
+// Token validation interval reference
+let tokenValidationInterval: number
+
 onMounted(() => {
   // Load tasks from backend
   loadTasks()
   
   // Fetch updated user profile
   auth.fetchProfile()
+  
+  // Set up periodic token validation (every 5 minutes)
+  tokenValidationInterval = setInterval(() => {
+    if (auth.isAuthenticated.value && auth.isTokenExpired()) {
+      console.log('Token expired during session, logging out...')
+      clearInterval(tokenValidationInterval)
+      handleSessionExpired()
+    }
+  }, 5 * 60 * 1000) // 5 minutes
+})
+
+// Clean up interval on component unmount
+onUnmounted(() => {
+  if (tokenValidationInterval) {
+    clearInterval(tokenValidationInterval)
+  }
 })
 </script> 

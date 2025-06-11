@@ -57,7 +57,31 @@ const router = createRouter({
 const isAuthenticated = () => {
   const token = localStorage.getItem('auth_token')
   const user = localStorage.getItem('auth_user')
-  return !!(token && user)
+  
+  // If no token or user data, definitely not authenticated
+  if (!token || !user) {
+    return false;
+  }
+  
+  // Check if token is expired (basic JWT check)
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    
+    // If token is expired, clear localStorage and return false
+    if (payload.exp && payload.exp < currentTime) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      return false;
+    }
+  } catch (error) {
+    // If token is malformed, clear it
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    return false;
+  }
+  
+  return true;
 }
 
 // Navigation guards
