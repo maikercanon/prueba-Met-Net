@@ -4,6 +4,8 @@ Sistema completo de gestión de tareas desarrollado con **Vue.js 3** y **Node.js
 
 **🌐 Demo Live**: [Frontend](https://prueba-met-net.vercel.app) | [Backend API](https://task-manager-backend-a7fs.onrender.com/api/health)
 
+> ⚠️ **Nota importante**: Esta aplicación utiliza servicios de hosting gratuitos (Render y Vercel). La primera carga puede demorar **30-60 segundos** debido a que los servidores se "despiertan" tras períodos de inactividad. Esto es normal en planes gratuitos.
+
 ---
 
 ## 🚀 **Características Principales**
@@ -16,6 +18,7 @@ Sistema completo de gestión de tareas desarrollado con **Vue.js 3** y **Node.js
 - ✅ **TypeScript** en frontend y backend
 - ✅ **Responsive design** optimizado para móviles
 - ✅ **Desplegado** en Render + Vercel
+- 🐳 **Dockerizado** para desarrollo y producción
 
 ---
 
@@ -30,6 +33,8 @@ prueba-Met-Net/
 │   │   ├── services/   # API calls
 │   │   ├── config/     # Configuración de API
 │   │   └── router/     # Configuración de rutas
+│   ├── Dockerfile      # Contenedor de producción
+│   ├── nginx.conf      # Configuración de Nginx
 │   ├── vercel.json     # Configuración de Vercel
 │   └── package.json
 │
@@ -40,11 +45,17 @@ prueba-Met-Net/
 │   │   ├── middleware/ # Autenticación JWT
 │   │   ├── services/   # Email service universal
 │   │   └── routes/     # Definición de rutas
+│   ├── Dockerfile      # Contenedor de producción
 │   ├── render.yaml     # Configuración de Render
 │   └── package.json
 │
-├── .gitignore          # Archivos a ignorar
-├── LICENSE             # Licencia MIT
+├── scripts/            # Scripts de inicialización
+│   └── init-mongo.js   # Setup de MongoDB
+├── docker-compose.yml  # Orquestación de contenedores
+├── docker-compose.dev.yml # Entorno de desarrollo
+├── Makefile           # Comandos Docker simplificados
+├── .gitignore         # Archivos a ignorar
+├── LICENSE            # Licencia MIT
 └── README.md
 ```
 
@@ -52,57 +63,107 @@ prueba-Met-Net/
 
 ## ⚡ **Inicio Rápido**
 
-### **Prerrequisitos**
-- Node.js 18+ instalado
-- MongoDB 6+ ejecutándose localmente
-- NPM o Yarn
+### **🐳 Opción 1: Docker (Recomendado)**
 
-### **1. Clonar el repositorio**
+**Prerrequisitos**: Docker y Docker Compose instalados
+
 ```bash
+# 1. Clonar el repositorio
 git clone https://github.com/maikercanon/prueba-Met-Net.git
 cd prueba-Met-Net
+
+# 2. Iniciar con Docker (incluye MongoDB)
+make quick-start
+
+# O manualmente:
+docker-compose up -d
+
+# 3. Acceder a la aplicación
+# Frontend: http://localhost:8080
+# Backend: http://localhost:4000
+# Usuario demo: demo@taskmanager.local / demo123
 ```
 
-### **2. Instalar dependencias**
-```bash
-# Frontend
-cd frontend
-npm install
+### **💻 Opción 2: Instalación Local**
 
-# Backend
-cd ../backend
-npm install
-```
+**Prerrequisitos**: Node.js 18+, MongoDB 6+, NPM
 
-### **3. Configurar variables de entorno**
 ```bash
+# 1. Clonar el repositorio
+git clone https://github.com/maikercanon/prueba-Met-Net.git
+cd prueba-Met-Net
+
+# 2. Instalar dependencias
+cd frontend && npm install
+cd ../backend && npm install
+
+# 3. Configurar variables de entorno
 # En backend/, crear archivo .env
 MONGODB_URI=mongodb://localhost:27017/taskmanager
 JWT_SECRET=tu_jwt_secret_super_seguro
 PORT=4000
 FRONTEND_URL=http://localhost:5173
 
-# Opcional - Para habilitar emails
-EMAIL_PROVIDER=sendgrid
-SENDGRID_API_KEY=SG.tu_api_key
-EMAIL_FROM=tu-email@gmail.com
-```
-
-### **4. Iniciar los servidores**
-```bash
+# 4. Iniciar los servidores
 # Terminal 1 - Backend
-cd backend
-npm run dev
+cd backend && npm run dev
 
-# Terminal 2 - Frontend
-cd frontend
-npm run dev
+# Terminal 2 - Frontend  
+cd frontend && npm run dev
+
+# 5. Acceder a la aplicación
+# Frontend: http://localhost:5173
+# Backend: http://localhost:4000
 ```
 
-### **5. Acceder a la aplicación**
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:4000
-- **Health Check**: http://localhost:4000/api/health
+---
+
+## 🐳 **Comandos Docker**
+
+### **Comandos Básicos**
+```bash
+make help           # Ver todos los comandos disponibles
+make quick-start    # Setup completo para primera vez
+make up             # Iniciar todos los servicios
+make down           # Detener todos los servicios
+make logs           # Ver logs en tiempo real
+make status         # Estado de contenedores
+make health         # Verificar salud de servicios
+```
+
+### **Desarrollo**
+```bash
+make dev            # Entorno desarrollo con hot-reload
+make dev-logs       # Logs del entorno de desarrollo
+make dev-down       # Detener entorno de desarrollo
+```
+
+### **Base de Datos**
+```bash
+make db-shell       # Abrir shell de MongoDB
+make db-backup      # Crear backup de la base de datos
+make db-restore BACKUP_DIR=./backup/fecha  # Restaurar backup
+```
+
+### **Mantenimiento**
+```bash
+make clean          # Limpiar contenedores e imágenes
+make restart        # Reiniciar todos los servicios
+make update         # Actualizar imágenes y reiniciar
+```
+
+### **Docker Compose Manual**
+```bash
+# Producción
+docker-compose up -d                    # Iniciar servicios
+docker-compose down                     # Detener servicios
+docker-compose logs -f                  # Ver logs
+docker-compose ps                       # Estado de servicios
+
+# Desarrollo
+docker-compose -f docker-compose.dev.yml up -d    # Desarrollo
+docker-compose -f docker-compose.dev.yml down     # Detener desarrollo
+```
 
 ---
 
@@ -149,6 +210,13 @@ npm run format     # Formatear código con Prettier
 
 **Decisión clave**: Sistema de email híbrido que funciona en desarrollo (tokens visibles) y producción (emails reales).
 
+### **Docker (Containerización)**
+- **Multi-stage builds**: Optimización de tamaño de imágenes
+- **Non-root users**: Mejores prácticas de seguridad
+- **Health checks**: Monitoreo automático de servicios
+- **Development volumes**: Hot-reload en contenedores
+- **Network isolation**: Comunicación segura entre servicios
+
 ### **Arquitectura de Despliegue**
 ```typescript
 // Configuración de API adaptativa
@@ -178,6 +246,15 @@ EMAIL_PROVIDER=sendgrid
 SENDGRID_API_KEY=SG.xxx...
 EMAIL_FROM=noreply@taskmanager.app
 EMAIL_FROM_NAME=Task Manager
+```
+
+### **Docker**
+```yaml
+# En docker-compose.yml
+environment:
+  EMAIL_PROVIDER: sendgrid
+  SENDGRID_API_KEY: SG.your_key_here
+  EMAIL_FROM: noreply@taskmanager.local
 ```
 
 ---
@@ -217,6 +294,8 @@ GET    /api/health          # Health check para monitoring
 - ✅ **Middleware de autenticación** en rutas protegidas
 - ✅ **Rate limiting** implementado en reset de contraseñas
 - ✅ **Headers de seguridad** en Vercel (XSS, CSRF protection)
+- ✅ **Contenedores no-root** para mayor seguridad
+- ✅ **Network isolation** en Docker
 
 ---
 
@@ -227,6 +306,11 @@ GET    /api/health          # Health check para monitoring
 - **Backend**: https://task-manager-backend-a7fs.onrender.com
 - **API Health**: https://task-manager-backend-a7fs.onrender.com/api/health
 
+### **URLs de Desarrollo (Docker)**
+- **Frontend**: http://localhost:8080
+- **Backend**: http://localhost:4000
+- **MongoDB**: mongodb://localhost:27017
+
 ### **Flujo de Testing**
 1. **Registro**: Crear nueva cuenta de usuario
 2. **Login**: Iniciar sesión con credenciales
@@ -235,11 +319,14 @@ GET    /api/health          # Health check para monitoring
 5. **Responsive**: Verificar en diferentes dispositivos
 
 ### **Credenciales de Prueba**
-Puedes crear tu propia cuenta o usar:
 ```javascript
-// Registra tu propia cuenta para testing
+// Producción - Registra tu propia cuenta
 email: "tu-email@gmail.com"
 password: "123456" // Mínimo 6 caracteres
+
+// Docker/Desarrollo - Usuario demo incluido
+email: "demo@taskmanager.local"
+password: "demo123"
 ```
 
 ---
@@ -278,6 +365,16 @@ const API_BASE_URL = import.meta.env.DEV
   : 'https://task-manager-backend-a7fs.onrender.com/api'
 ```
 
+### **Containerización Completa**
+```yaml
+# docker-compose.yml - Stack completo
+services:
+  mongodb:    # Base de datos con datos de prueba
+  backend:    # API con health checks
+  frontend:   # SPA con Nginx optimizado
+  nginx:      # Reverse proxy (opcional)
+```
+
 ---
 
 ## 🤝 **Contribuir**
@@ -312,6 +409,7 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 - [MongoDB Documentation](https://docs.mongodb.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [SendGrid Documentation](https://docs.sendgrid.com/)
+- [Docker Documentation](https://docs.docker.com/)
 - [Render Documentation](https://render.com/docs)
 - [Vercel Documentation](https://vercel.com/docs)
 
@@ -322,8 +420,9 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 🌐 **Live Demo**: https://prueba-met-net.vercel.app  
 📂 **Source Code**: https://github.com/maikercanon/prueba-Met-Net  
 🔧 **API Health**: https://task-manager-backend-a7fs.onrender.com/api/health  
+🐳 **Docker Hub**: [Próximamente]
 
 ---
 
-*Desarrollado con ❤️ usando Vue.js 3 + Node.js + MongoDB*  
+*Desarrollado con ❤️ usando Vue.js 3 + Node.js + MongoDB + Docker*  
 *Desplegado en �� Render + Vercel* 
