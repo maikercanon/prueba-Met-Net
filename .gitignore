@@ -79,4 +79,7 @@ jspm_packages/
 ._*
 .Spotlight-V100
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Entregables document (not for git)
+Entregables-Maiker-Canon.html 
