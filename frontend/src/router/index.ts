@@ -34,7 +34,7 @@ const routes = [
     path: '/reset-password/:token',
     name: 'ResetPassword',
     component: ResetPasswordForm,
-    meta: { requiresGuest: true }
+    meta: { allowAll: true }
   },
   {
     path: '/dashboard',
@@ -63,6 +63,12 @@ const isAuthenticated = () => {
 // Navigation guards
 router.beforeEach((to, from, next) => {
   const authenticated = isAuthenticated()
+  
+  // Allow routes with allowAll meta regardless of auth status
+  if (to.meta.allowAll) {
+    next()
+    return
+  }
   
   // Check if route requires authentication
   if (to.meta.requiresAuth && !authenticated) {
