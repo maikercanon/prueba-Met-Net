@@ -172,7 +172,8 @@ export const forgotPassword = async (req: Request, res: Response) => {
     console.log('🔑 Reset token generated and saved');
 
     // Create reset URL
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''); // Remove trailing slash
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
     console.log('🔗 Reset URL created:', resetUrl);
 
