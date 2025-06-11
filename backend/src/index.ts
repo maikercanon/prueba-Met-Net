@@ -19,11 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api', taskRoutes);
-
-// Health check route
+// Health check route (must be before protected routes)
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -32,6 +28,10 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', taskRoutes);
 
 const PORT = process.env.PORT || 4000;
 
