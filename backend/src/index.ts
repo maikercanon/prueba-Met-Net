@@ -9,16 +9,12 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration for development and production
-const allowedOrigins = [
-  'http://localhost:5173', // Development
-  'http://localhost:3000', // Alternative development
-  process.env.FRONTEND_URL, // Production
-].filter((origin): origin is string => Boolean(origin)); // Remove undefined values
-
+// CORS configuration - Allow all origins for development and production
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
+  origin: true, // Allow all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -57,4 +53,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
   console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔒 CORS: Allowing all origins`);
 });
