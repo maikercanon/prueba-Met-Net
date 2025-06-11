@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0-focal
+    container_name: taskmanager-mongodb-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: taskmanager
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_dev_data:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - taskmanager-dev-network
+
+  # Backend API (Development)
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: taskmanager-backend-dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/taskmanager?authSource=admin
+      JWT_SECRET: development_jwt_secret_not_for_production
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "4000:4000"
+      - "9229:9229"  # Node.js debugger port
+    depends_on:
+      - mongodb
+    networks:
+      - taskmanager-dev-network
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/package*.json:/app/
+      - /app/node_modules
+    command: npm run dev
+
+  # Frontend Development Server
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: taskmanager-frontend-dev
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:4000/api
+    ports:
+      - "5173:5173"
+    networks:
+      - taskmanager-dev-network
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+      - ./frontend/package*.json:/app/
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+# Volumes
+volumes:
+  mongodb_dev_data:
+    driver: local
+
+# Networks
+networks:
+  taskmanager-dev-network:
+    driver: bridge 

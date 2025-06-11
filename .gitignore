@@ -1,15 +1,37 @@
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Environment variables
+# dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
 
 # Logs
 logs
@@ -21,11 +43,14 @@ pids
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
-coverage/
+# Docker
+.docker/
+docker-compose.override.yml
+backup/
 
-# nyc test coverage
-.nyc_output
+# Temporary files
+.tmp/
+.temp/
 
 # Dependency directories
 jspm_packages/
@@ -42,36 +67,16 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# Build directories
-dist/
-build/
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
 # TypeScript
 *.tsbuildinfo
-
-# Temporary folders
-tmp/
-temp/
 
 # Database files
 *.db
 *.sqlite
 
-# Backup files
-*.backup 
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+ehthumbs.db
+Thumbs.db 
