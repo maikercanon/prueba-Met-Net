@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: task-manager-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: task-manager-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_PROVIDER
+        value: sendgrid
+      - key: EMAIL_FROM
+        value: noreply@taskmanager.app
+      - key: EMAIL_FROM_NAME
+        value: Task Manager
+    # Add your SendGrid API key in Render dashboard as environment variable
+    # SENDGRID_API_KEY=SG.your_key_here
+    
+databases:
+  - name: task-manager-db
+    databaseName: taskmanager
+    user: taskmanager 
