@@ -24,4 +24,6 @@ console.log('🔧 API Configuration:', {
   baseURL: API_BASE_URL,
   environment: import.meta.env.MODE,
   isDev: import.meta.env.DEV,
-}) 
+})
+
+// Force redeploy - Updated API URL to correct Render backend 
